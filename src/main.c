@@ -51,32 +51,41 @@ int GetUserID(User users[], int count, int input_id) {
     return -1;
 }
 
-Book GetCode(Book *books[100]){
-    //bookリスト取得
-    FILE *bookfp;
-    char book_filename[] = "src/book.csv";
-    fopen(book_filename, "r");
-    char str[100]="";
-    fgets(str, 100, bookfp);
-
-    //バーコードを入力
-    int code, i=0;
-    scanf("%d", &code);
-    //bookリストからコードと一致するものを探す
-    while(i<=100) {
-        //コードと一致するものがあれば、その書籍の情報を返す
-        if(code == books[i]->code){
-            return *books[i];
+int GetBookID(Book books[], int count, int book_code) {
+    for (int i = 0; i < count; i++) {
+        if (books[i].code == book_code) {
+            return i;
         }
-        i++;
     }
-    printf("コードが見つかりませんでした。");
+    return -1;
+}
 
-    Book not_found = {0};
-    not_found.code = -1;
-    return not_found;
+// Book GetCode(Book *books[100]){
+//     //bookリスト取得
+//     FILE *bookfp;
+//     char book_filename[] = "src/book.csv";
+//     fopen(book_filename, "r");
+//     char str[100]="";
+//     fgets(str, 100, bookfp);
 
-};
+//     //バーコードを入力
+//     int code, i=0;
+//     scanf("%d", &code);
+//     //bookリストからコードと一致するものを探す
+//     while(i<=100) {
+//         //コードと一致するものがあれば、その書籍の情報を返す
+//         if(code == books[i]->code){
+//             return *books[i];
+//         }
+//         i++;
+//     }
+//     printf("コードが見つかりませんでした。");
+
+//     Book not_found = {0};
+//     not_found.code = -1;
+//     return not_found;
+
+// };
 
 int CalculateCharge(int book_num){
     ChargeTable stay_days;
@@ -178,6 +187,9 @@ int main() {
     int user_count;
     int input_id;
 
+    int book_count;
+    int book_code;
+
     int charge = 0; // 合計金額
     int book_num = 2; // 貸出冊数
 
@@ -206,7 +218,6 @@ int main() {
         fgets(line, sizeof(line), userfp);
 
         while (fgets(line, sizeof(line), userfp)) {
-
        if (sscanf(line, "%d,%[^,],%[^,],%d,%[^,],%d,%d,%[^\n]",
             &users[user_count].id,
             users[user_count].name,
@@ -235,8 +246,42 @@ int main() {
         printf("\n--- ユーザー情報 ---\n");
         printf("ID: %d\n", users[user_index].id);
         printf("名前: %s\n", users[user_index].name);
+
         // 3.商品バーコードを通す
-        book = GetCode(&books);
+        book_count = 0;
+        bookfp = fopen(book_filename, "r");
+        if (bookfp == NULL) {
+            printf("ファイルを開けません: %s\n", book_filename);
+            return 1;
+        }
+
+        fgets(line, sizeof(line), bookfp);
+
+        while (fgets(line, sizeof(line), bookfp)) {
+            // title, code, status
+
+       if (sscanf(line, "%s,%d,%d\n",
+             books[book_count].title,
+             &books[book_count].code,
+             &books[book_count].status) == 3) {
+            book_count++;
+        }
+    }
+        fclose(bookfp);
+
+        printf("本のコードを入力してください: ");
+        
+        fgets(line, sizeof(line), stdin);
+        sscanf(line, "%d", &book_code);
+
+        int book_index = GetBookID(books, book_count, book_code);
+
+        if (book_index == -1) {
+            printf("本が見つかりません\n");
+        }
+        printf("\n--- 本情報 ---\n");
+        printf("コード: %d\n", books[book_index].code);
+        printf("タイトル: %s\n", books[book_index].title);
 
         // 4. 泊数を選ぶ
         printf("冊数: %d冊\n", book_num);
