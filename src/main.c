@@ -266,13 +266,13 @@ int main() {
         while (fgets(line, sizeof(line), bookfp)) {
             // title, code, status
 
-       if (sscanf(line, "%[^,],%d,%d",
-             books[book_count].title,
-             &books[book_count].code,
-             &books[book_count].status) == 3) {
-            book_count++;
+            if (sscanf(line, "%[^,],%d,%d",
+                books[book_count].title,
+                &books[book_count].code,
+                &books[book_count].status) == 3) {
+                book_count++;
+            }
         }
-    }
         fclose(bookfp);
 
         printf("本のコードを入力してください: ");
