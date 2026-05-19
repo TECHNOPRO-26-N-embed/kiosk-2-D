@@ -88,7 +88,7 @@ int GetBookID(Book books[], int count, int book_code) {
 
 // };
 
-int CalculateCharge(int book_num, Log *log){
+int CalculateCharge(int book_num,Log *log){
     ChargeTable stay_days;
     while(1){
         printf("泊数を選んでください\n");
@@ -101,19 +101,19 @@ int CalculateCharge(int book_num, Log *log){
             printf("無効な入力です。もう一度選んでください。\n");
             continue;
         }
-        log->rent_date = 0; // ログに貸出日を保存
+        log->rent_date = 0;
         switch(choice){
             case 1:
                 stay_days = ONE_DAY;
-                log->return_date = 1; // ログに返却日を保存
+                log->return_date = 1;
                 break;
             case 2:
                 stay_days = TWO_DAYS;
-                log->return_date = 2; // ログに返却日を保存
+                log->return_date = 2;
                 break;
             case 3:
                 stay_days = SEVEN_DAYS;
-                log->return_date = 7; // ログに返却日を保存
+                log->return_date = 7;
                 break;
         }
         break;
@@ -121,7 +121,7 @@ int CalculateCharge(int book_num, Log *log){
     return stay_days * book_num;
 };
 
-int ConfirmScreen(User user, Book book,Log log){
+int ConfirmScreen(User user, Book book, int days, Log log){
 
     int select;
 
@@ -133,7 +133,7 @@ int ConfirmScreen(User user, Book book,Log log){
 
     printf("書籍タイトル : %s\n", book.title);
 
-    printf("泊数 : %d\n", log.return_date - log.rent_date);
+    printf("泊数 : %d\n", days);
 
     printf("合計金額 : %d円\n", log.charge);
 
@@ -176,34 +176,7 @@ int SelectPayment(){
     return pay;
 }
 
-// 3.商品バーコードを通す
-Book GetCode(Book *books[]){
-    //bookリスト取得
-    FILE *bookfp;
-    char book_filename[] = "book.csv";
-    fopen(book_filename, "r");
-    char str[100]="";
-    fgets(str, 100, bookfp);
-    
-    //バーコードを入力
-    int code, i=0;
-    scanf("%d", &code);
-    //bookリストからコードと一致するものを探す
-    while(i<=100) {
-        //コードと一致するものがあれば、その書籍の情報を返す
-        if(code == books[i]->code){
-            return *books[i];
-        }
-        i++;
-    }
-    printf("コードが見つかりませんでした。");
-    Book not_found = {0};
-    not_found.code = -1;
-    return not_found;
-};
-
 int main() {
-    setlocale(LC_ALL, "Japanese_Japan.65001");
 
     FILE *userfp;
     char user_filename[] = "src/user.csv";
@@ -212,7 +185,6 @@ int main() {
     char book_filename[] = "src/book.csv";
 
     FILE *logfp;
-<<<<<<< Updated upstream
     char log_filename[] = "src/log.csv";
 
     User users[100];
@@ -235,12 +207,7 @@ int main() {
     //mainのなかで宣言している変数
     int days = 0;
     int confirm;
-=======
-    char log_filename[] = "log.csv";
->>>>>>> Stashed changes
 
-    User users[100];
-    Book books[100];
 
     while(1){
         printf("図書館貸出システム\n");
@@ -257,7 +224,7 @@ int main() {
         fgets(line, sizeof(line), userfp);
 
         while (fgets(line, sizeof(line), userfp)) {
-       if (sscanf(line, "%d,%[^,],%[^,],%d,%[^,],%d,%d,%[^\n]",
+        if (sscanf(line, "%d,%[^,],%[^,],%d,%[^,],%d,%d,%[^\n]",
             &users[user_count].id,
             users[user_count].name,
             users[user_count].address,
@@ -299,17 +266,17 @@ int main() {
         while (fgets(line, sizeof(line), bookfp)) {
             // title, code, status
 
-       if (sscanf(line, "%[^,],%d,%d",
-             books[book_count].title,
-             &books[book_count].code,
-             &books[book_count].status) == 3) {
-            book_count++;
+            if (sscanf(line, "%[^,],%d,%d",
+                books[book_count].title,
+                &books[book_count].code,
+                &books[book_count].status) == 3) {
+                book_count++;
+            }
         }
-    }
         fclose(bookfp);
 
         printf("本のコードを入力してください: ");
-
+        
         scanf("%d", &book_code);
 
         int book_index = GetBookID(books, book_count, book_code);
@@ -327,7 +294,7 @@ int main() {
         printf("合計金額: %d円\n", charge);
 
         // 5. 確認画面
-        confirm = ConfirmScreen(user, book, log); //main.cのなかでConfirmScreen関数を呼び出す
+        confirm = ConfirmScreen(user, book, days, log); //main.cのなかでConfirmScreen関数を呼び出す
 
         // 6. 支払い方法選ぶ
         pay = SelectPayment();
