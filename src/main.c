@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
 
 typedef struct {
     char title[100];
@@ -87,7 +88,7 @@ int GetBookID(Book books[], int count, int book_code) {
 
 // };
 
-int CalculateCharge(int book_num){
+int CalculateCharge(int book_num, Log *log){
     ChargeTable stay_days;
     while(1){
         printf("泊数を選んでください\n");
@@ -100,15 +101,19 @@ int CalculateCharge(int book_num){
             printf("無効な入力です。もう一度選んでください。\n");
             continue;
         }
+        log->rent_date = 0; // ログに貸出日を保存
         switch(choice){
             case 1:
                 stay_days = ONE_DAY;
+                log->return_date = 1; // ログに返却日を保存
                 break;
             case 2:
                 stay_days = TWO_DAYS;
+                log->return_date = 2; // ログに返却日を保存
                 break;
             case 3:
                 stay_days = SEVEN_DAYS;
+                log->return_date = 7; // ログに返却日を保存
                 break;
         }
         break;
@@ -116,7 +121,7 @@ int CalculateCharge(int book_num){
     return stay_days * book_num;
 };
 
-int ConfirmScreen(User user, Book book, int days, Log log){
+int ConfirmScreen(User user, Book book,Log log){
 
     int select;
 
@@ -128,7 +133,7 @@ int ConfirmScreen(User user, Book book, int days, Log log){
 
     printf("書籍タイトル : %s\n", book.title);
 
-    printf("泊数 : %d\n", days);
+    printf("泊数 : %d\n", log.return_date - log.rent_date);
 
     printf("合計金額 : %d円\n", log.charge);
 
@@ -172,6 +177,8 @@ int SelectPayment(){
 }
 
 int main() {
+    // setlocale(LC_ALL, "");
+
     FILE *userfp;
     char user_filename[] = "src/user.csv";
 
@@ -199,7 +206,7 @@ int main() {
     Book book;
     Log log;
     //mainのなかで宣言している変数
-    int days;
+    int days = 0;
     int confirm;
 
 
@@ -258,13 +265,16 @@ int main() {
         fgets(line, sizeof(line), bookfp);
 
         while (fgets(line, sizeof(line), bookfp)) {
+            printf("line: %s\n", line);
             // title, code, status
 
-       if (sscanf(line, "%s,%d,%d\n",
+       if (sscanf(line, "%[^,],%d,%d\n",
              books[book_count].title,
              &books[book_count].code,
              &books[book_count].status) == 3) {
             book_count++;
+
+            printf("title: %s, code: %d, status: %d\n", books[book_count].title, books[book_count].code, books[book_count].status);
         }
     }
         fclose(bookfp);
@@ -285,11 +295,11 @@ int main() {
 
         // 4. 泊数を選ぶ
         printf("冊数: %d冊\n", book_num);
-        charge = CalculateCharge(book_num);
+        charge = CalculateCharge(book_num, &log);
         printf("合計金額: %d円\n", charge);
 
         // 5. 確認画面
-        confirm = ConfirmScreen(user, book, days, log); //main.cのなかでConfirmScreen関数を呼び出す
+        confirm = ConfirmScreen(user, book, log); //main.cのなかでConfirmScreen関数を呼び出す
 
         // 6. 支払い方法選ぶ
         pay = SelectPayment();
