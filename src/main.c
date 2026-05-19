@@ -171,6 +171,32 @@ int SelectPayment(){
     return pay;
 }
 
+// 3.商品バーコードを通す
+Book GetCode(Book *books[]){
+    //bookリスト取得
+    FILE *bookfp;
+    char book_filename[] = "book.csv";
+    fopen(book_filename, "r");
+    char str[100]="";
+    fgets(str, 100, bookfp);
+    
+    //バーコードを入力
+    int code, i=0;
+    scanf("%d", &code);
+    //bookリストからコードと一致するものを探す
+    while(i<=100) {
+        //コードと一致するものがあれば、その書籍の情報を返す
+        if(code == books[i]->code){
+            return *books[i];
+        }
+        i++;
+    }
+    printf("コードが見つかりませんでした。");
+    Book not_found = {0};
+    not_found.code = -1;
+    return not_found;
+};
+
 int main() {
     FILE *userfp;
     char user_filename[] = "src/user.csv";
@@ -179,6 +205,7 @@ int main() {
     char book_filename[] = "src/book.csv";
 
     FILE *logfp;
+<<<<<<< Updated upstream
     char log_filename[] = "src/log.csv";
 
     User users[100];
@@ -201,7 +228,12 @@ int main() {
     //mainのなかで宣言している変数
     int days;
     int confirm;
+=======
+    char log_filename[] = "log.csv";
+>>>>>>> Stashed changes
 
+    User users[100];
+    Book books[100];
 
     while(1){
         printf("図書館貸出システム\n");
