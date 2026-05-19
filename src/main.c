@@ -177,7 +177,7 @@ int SelectPayment(){
 }
 
 int main() {
-    // setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "Japanese_Japan.65001");
 
     FILE *userfp;
     char user_filename[] = "src/user.csv";
@@ -265,24 +265,20 @@ int main() {
         fgets(line, sizeof(line), bookfp);
 
         while (fgets(line, sizeof(line), bookfp)) {
-            printf("line: %s\n", line);
             // title, code, status
 
-       if (sscanf(line, "%[^,],%d,%d\n",
+       if (sscanf(line, "%[^,],%d,%d",
              books[book_count].title,
              &books[book_count].code,
              &books[book_count].status) == 3) {
             book_count++;
-
-            printf("title: %s, code: %d, status: %d\n", books[book_count].title, books[book_count].code, books[book_count].status);
         }
     }
         fclose(bookfp);
 
         printf("本のコードを入力してください: ");
-        
-        fgets(line, sizeof(line), stdin);
-        sscanf(line, "%d", &book_code);
+
+        scanf("%d", &book_code);
 
         int book_index = GetBookID(books, book_count, book_code);
 
