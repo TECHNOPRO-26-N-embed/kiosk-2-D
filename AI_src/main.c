@@ -38,13 +38,13 @@ int main(void) {
 
     user_count = user_load_users("AI_src/user.csv", users, 100);
     if (user_count == 0) {
-        fprintf(stderr, "user.csvを開けませんでした、またはデータが空です\n");
+        fprintf(stderr, "user.csvを開けませんでした、またはデータが空です。\n");
         return 1;
     }
 
     printf("\n--- ユーザーID認証 ---\n");
     if (user_authenticate_screen(users, user_count, &authenticated_user) != 0) {
-        fprintf(stderr, "ユーザー認証に失敗しました\n");
+        fprintf(stderr, "ユーザー認証に失敗しました。\n");
         return 1;
     }
 
@@ -54,13 +54,13 @@ int main(void) {
 
     bookfp = book_open_csv("AI_src/book.csv", "src/book.csv");
     if (bookfp == NULL) {
-        fprintf(stderr, "book.csvを開けませんでした\n");
+        fprintf(stderr, "book.csvを開けませんでした。\n");
         return 1;
     }
 
     if (book_scan_and_checkout_loop(bookfp, &scanned_count, &accepted_count) != 0) {
         fclose(bookfp);
-        fprintf(stderr, "会計処理でエラーが発生しました\n");
+        fprintf(stderr, "会計処理でエラーが発生しました。\n");
         return 1;
     }
 
@@ -71,7 +71,7 @@ int main(void) {
 
     amount = rent_calc_total_price(accepted_count);
     if (amount < 0) {
-        fprintf(stderr, "料金計算に失敗しました\n");
+        fprintf(stderr, "料金計算に失敗しました。\n");
         return 1;
     }
 
@@ -80,13 +80,14 @@ int main(void) {
     if (amount > 0) {
         payment_method = payment_select_method(max_retry);
         if (payment_method == -1) {
-            fprintf(stderr, "支払い方法の選択に失敗しました\n");
+            fprintf(stderr, "支払い方法選択の最大試行回数に達しました。\n");
+            fprintf(stderr, "最初からやり直してください。\n");
             return 1;
         }
 
         payment_result = payment_process(payment_method, amount);
         if (payment_result != PAYMENT_RESULT_OK) {
-            fprintf(stderr, "支払い処理に失敗しました\n");
+            fprintf(stderr, "支払い処理に失敗しました。\n");
             return 1;
         }
 
