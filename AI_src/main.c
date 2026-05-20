@@ -3,7 +3,6 @@
 #include "payment.h"
 #include "rent.h"
 #include "user.h"
-#include "slip.h"
 
 int main(void) {
     User users[100];
@@ -14,7 +13,6 @@ int main(void) {
     int accepted_count = 0;
     int amount;
     int payment_result;
-    int payment_method = -1;
     const int max_retry = 3;
 
     book_runtime_init();
@@ -54,43 +52,15 @@ int main(void) {
         return 1;
     }
 
-
     if (amount > 0) {
-        payment_method = payment_select_method(max_retry);
-        if (payment_method == -1) {
-            fprintf(stderr, "支払い方法の選択に失敗しました\n");
-            return 1;
-        }
-        payment_result = payment_process(payment_method, amount);
-        if (payment_result == PAYMENT_RESULT_OK) {
-            printf("支払い方法: %s\n", payment_method_label(payment_method));
-            printf("支払いが完了しました。\n");
-        } else {
-            printf("支払いに失敗しました。\n");
+        payment_result = payment_run_flow(amount, max_retry);
+        if (payment_result != PAYMENT_RESULT_OK) {
+            fprintf(stderr, "支払い処理に失敗しました\n");
             return 1;
         }
     } else {
         printf("貸出可能な書籍がないため、支払いはスキップします。\n");
     }
 
-    //log record    
-    if (amount > 0 && payment_result == PAYMENT_RESULT_OK) {
-        SlipRecord slip;
-        char datetime[DATETIME_MAX];
-        int slip_no = get_next_slip_no("log.csv");
-
-        get_current_datetime(datetime, sizeof(datetime));
-        create_slip_record(
-            &slip,
-            slip_no,
-            authenticated_user.name, // またはID等
-            "本のタイトル",           // 実際は貸出本タイトルを連結して渡す
-            payment_method_label(payment_method), // 支払い方法名
-            "1",                    // レジ番号等
-            "2026/05/31",           // 返却期限等
-            datetime
-        );
-        write_slip_to_csv("log.csv", &slip);
-    }
     return 0;
 }
