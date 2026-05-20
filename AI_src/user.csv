@@ -1,3 +1,5 @@
+//Win
+
 id,name,address,age,phone,gender,now_rent,reference
 10,John Doe,Tokyo,28,08012345678,0,1,none
 11,Jane Smith,Osaka,35,09087654321,1,0,VIP
