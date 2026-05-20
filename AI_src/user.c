@@ -1,3 +1,5 @@
+//Win
+
 #include "user.h"
 
 #include <stdio.h>
@@ -137,7 +139,7 @@ int user_authenticate_screen(const User users[], int user_count, User *authentic
 
     while (1) {
         input_id = user_input_id();
-        if (input_id < 0) {
+        if (input_id <= 0) {
             user_show_invalid_input_message();
             continue;
         }

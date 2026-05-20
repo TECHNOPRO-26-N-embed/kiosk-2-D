@@ -1,3 +1,5 @@
+//Kobayashi
+
 #include "rent.h"
 
 #include <stdio.h>

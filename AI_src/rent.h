@@ -1,3 +1,5 @@
+//Kobayashi
+
 #ifndef RENT_H
 #define RENT_H
 
