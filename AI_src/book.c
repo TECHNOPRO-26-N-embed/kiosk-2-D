@@ -236,6 +236,7 @@ int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_
         } else if (found.status == 2) {
             printf("この本は延滞中のため、貸出できません。\n");
         }
+        printf("追加の本番号を入力してください（q:終了）：");
     }
 
     if (scanned_count != NULL) {
