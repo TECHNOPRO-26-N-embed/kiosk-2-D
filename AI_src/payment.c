@@ -1,3 +1,5 @@
+//Tanaka
+
 #include "payment.h"
 
 #include <stdio.h>

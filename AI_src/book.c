@@ -1,3 +1,5 @@
+//Nishimura
+
 #include "book.h"
 
 #include <ctype.h>
@@ -92,11 +94,68 @@ int book_find_by_jan(FILE *bookfp, const char *jan, Book *out_book) {
     return 1;
 }
 
+static int book_find_by_index(FILE *bookfp, int target_index, Book *out_book) {
+    char line[512];
+    Book current;
+    int row = 0;
+
+    if (bookfp == NULL || out_book == NULL || target_index <= 0) {
+        return -1;
+    }
+
+    out_book->jan[0] = '\0';
+    out_book->title[0] = '\0';
+    out_book->status = -1;
+
+    rewind(bookfp);
+    if (fgets(line, sizeof(line), bookfp) == NULL) {
+        return -1;
+    }
+
+    while (fgets(line, sizeof(line), bookfp) != NULL) {
+        if (sscanf(line, "%31[^,],%127[^,],%d", current.jan, current.title, &current.status) == 3) {
+            row++;
+            if (row == target_index) {
+                *out_book = current;
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+static void book_print_list(FILE *bookfp) {
+    char line[512];
+    Book current;
+    int row = 0;
+
+    if (bookfp == NULL) {
+        return;
+    }
+
+    rewind(bookfp);
+    if (fgets(line, sizeof(line), bookfp) == NULL) {
+        return;
+    }
+
+    printf("\n--- 本一覧（番号入力で選択可）---\n");
+    while (fgets(line, sizeof(line), bookfp) != NULL) {
+        if (sscanf(line, "%31[^,],%127[^,],%d", current.jan, current.title, &current.status) == 3) {
+            row++;
+            printf("%d. %s / %s / %s\n", row, current.jan, current.title, book_status_text(current.status));
+        }
+    }
+    printf("--------------------------------\n\n");
+}
+
 int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_count) {
     char input_jan[BOOK_JAN_MAX] = {0};
+    char *endptr;
     Book found;
     int scanned = 0;
     int accepted = 0;
+    int selected_index;
     int result;
 
     if (bookfp == NULL) {
@@ -104,9 +163,10 @@ int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_
     }
 
     printf("複数冊の会計モードです。終了するにはqを入力してください。\n");
+    printf("ヒント: l で本一覧、番号入力でも選択できます。\n");
 
     while (1) {
-        printf("JANコードを入力してください（13桁、qで終了）：");
+        printf("JANコードまたは本番号を入力してください（l:一覧, q:終了）：");
         if (fgets(input_jan, sizeof(input_jan), stdin) == NULL) {
             break;
         }
@@ -116,6 +176,21 @@ int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_
             break;
         }
 
+        if (strcmp(input_jan, "l") == 0 || strcmp(input_jan, "L") == 0) {
+            book_print_list(bookfp);
+            continue;
+        }
+
+        endptr = NULL;
+        selected_index = (int)strtol(input_jan, &endptr, 10);
+        if (endptr != input_jan && *endptr == '\0' && strlen(input_jan) < 13) {
+            scanned++;
+            result = book_find_by_index(bookfp, selected_index, &found);
+            if (result != 0) {
+                printf("商品が存在しません。番号を入れ直してください。\n");
+                continue;
+            }
+        } else {
         if (!book_is_valid_jan(input_jan)) {
             printf("商品が存在しません。コードを入れ直してください。\n");
             continue;
@@ -126,6 +201,7 @@ int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_
         if (result != 0) {
             printf("商品が存在しません。コードを入れ直してください。\n");
             continue;
+        }
         }
 
         printf("バーコード：%s, タイトル：%s, ステータス：%d（%s）\n", found.jan, found.title, found.status, book_status_text(found.status));

@@ -1,7 +1,7 @@
-//F08 関数定義ヘッダ
+//Ou
 
-#ifndef F08_SLIP_H
-#define F08_SLIP_H
+#ifndef SLIP_H
+#define SLIP_H
 
 #define USER_ID_MAX 16
 #define ITEM_NAME_MAX 64

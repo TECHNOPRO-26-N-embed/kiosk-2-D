@@ -1,4 +1,4 @@
-//F08 関数実装
+//Ou
 
 #include "slip.h"
 
