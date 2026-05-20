@@ -211,7 +211,7 @@ int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_
         endptr = NULL;
         selected_index = (int)strtol(input_jan, &endptr, 10);
         if (!(endptr != input_jan && *endptr == '\0' && selected_index > 0)) {
-            printf("有効な本番号を入力してください。\n");
+            printf("有効な本番号を入力してください。：");
             continue;
         }
 
@@ -225,6 +225,7 @@ int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_
         printf("バーコード：%s, タイトル：%s, ステータス：%d（%s）\n", found.jan, found.title, found.status, book_status_text(found.status));
         if (!book_prompt_add_or_cancel()) {
             printf("追加をキャンセルしました。\n");
+            printf("追加の本番号を入力してください（q:終了）：");
             continue;
         }
 
