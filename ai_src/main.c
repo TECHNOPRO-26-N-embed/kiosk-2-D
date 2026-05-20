@@ -81,11 +81,9 @@ int calc_total_price(int book_count) {
     return total;
 }
 
-// テスト用main関数（実際の組み込み時は削除/修正）
-#ifdef TEST_MAIN
+
 int main() {
     int book_count = 2; // 仮の冊数
     calc_total_price(book_count);
     return 0;
 }
-#endif
