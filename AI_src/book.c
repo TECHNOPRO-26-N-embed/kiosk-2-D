@@ -149,6 +149,27 @@ static void book_print_list(FILE *bookfp) {
     printf("--------------------------------\n\n");
 }
 
+static int book_prompt_add_or_cancel(void) {
+    char input[16];
+
+    while (1) {
+        printf("この本を追加しますか？（a:追加 / c:キャンセル）：");
+        if (fgets(input, sizeof(input), stdin) == NULL) {
+            return 0;
+        }
+
+        input[strcspn(input, "\r\n")] = '\0';
+        if (input[0] == 'a' || input[0] == 'A') {
+            return 1;
+        }
+        if (input[0] == 'c' || input[0] == 'C') {
+            return 0;
+        }
+
+        printf("a または c を入力してください。\n");
+    }
+}
+
 int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_count) {
     char input_jan[BOOK_JAN_MAX] = {0};
     char *endptr;
@@ -163,48 +184,50 @@ int book_scan_and_checkout_loop(FILE *bookfp, int *scanned_count, int *accepted_
     }
 
     printf("複数冊の会計モードです。終了するにはqを入力してください。\n");
-    printf("ヒント: l で本一覧、番号入力でも選択できます。\n");
+    // 一覧は最初の1回だけ表示
+    book_print_list(bookfp);
 
+    int prompt_shown = 0;
     while (1) {
-        printf("JANコードまたは本番号を入力してください（l:一覧, q:終了）：");
+        memset(input_jan, 0, sizeof(input_jan)); // バッファを毎回クリア
+        if (!prompt_shown) {
+            printf("本番号を入力してください（q:終了）：");
+            fflush(stdout);
+            prompt_shown = 1;
+        }
         if (fgets(input_jan, sizeof(input_jan), stdin) == NULL) {
             break;
         }
 
         input_jan[strcspn(input_jan, "\r\n")] = '\0';
+        if (input_jan[0] == '\0') {
+            memset(input_jan, 0, sizeof(input_jan));
+            continue;
+        }
         if (strcmp(input_jan, "q") == 0 || strcmp(input_jan, "Q") == 0) {
             break;
         }
 
-        if (strcmp(input_jan, "l") == 0 || strcmp(input_jan, "L") == 0) {
-            book_print_list(bookfp);
-            continue;
-        }
-
         endptr = NULL;
         selected_index = (int)strtol(input_jan, &endptr, 10);
-        if (endptr != input_jan && *endptr == '\0' && strlen(input_jan) < 13) {
-            scanned++;
-            result = book_find_by_index(bookfp, selected_index, &found);
-            if (result != 0) {
-                printf("商品が存在しません。番号を入れ直してください。\n");
-                continue;
-            }
-        } else {
-        if (!book_is_valid_jan(input_jan)) {
-            printf("商品が存在しません。コードを入れ直してください。\n");
+        if (!(endptr != input_jan && *endptr == '\0' && selected_index > 0)) {
+            printf("有効な本番号を入力してください。\n");
             continue;
         }
 
         scanned++;
-        result = book_find_by_jan(bookfp, input_jan, &found);
+        result = book_find_by_index(bookfp, selected_index, &found);
         if (result != 0) {
-            printf("商品が存在しません。コードを入れ直してください。\n");
+            printf("商品が存在しません。番号を入れ直してください。\n");
             continue;
-        }
         }
 
         printf("バーコード：%s, タイトル：%s, ステータス：%d（%s）\n", found.jan, found.title, found.status, book_status_text(found.status));
+        if (!book_prompt_add_or_cancel()) {
+            printf("追加をキャンセルしました。\n");
+            continue;
+        }
+
         if (found.status == 0) {
             accepted++;
             printf("レンタルリストに追加されました。\n");
